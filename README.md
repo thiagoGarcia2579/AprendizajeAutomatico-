@@ -1,6 +1,21 @@
 # Aprendizaje Automático
 
-Repositorio de trabajos prácticos y ejercicios desarrollados para la materia **Aprendizaje Automático**. Se abordan diferentes métodos y algoritmos para el análisis de datos, incluyendo clasificación, regresión, predicción y agrupamiento, junto con técnicas para evaluar el desempeño de los modelos y analizar sus resultados.
+## Licenciatura en Informática
+
+Repositorio correspondiente a la materia **Aprendizaje Automático**.
+
+En este espacio se reúnen los trabajos, ejercicios y desarrollos realizados durante la cursada, con un uso intensivo de **Python** para el procesamiento de datos, implementación de algoritmos y experimentación con técnicas de aprendizaje automático.
+
+### Tecnologías
+
+* Python
+* Pandas
+* Análisis de datos
+* Machine Learning
+* Algoritmos de aprendizaje automático
+
+**Universidad Nacional de Hurlingham (UNAHUR)**
+
 - [TP N°1](./TP%20N°1)
 - [TP N°2](./TP%20N°2)
 - [TP N°3](./TP%20N°3)

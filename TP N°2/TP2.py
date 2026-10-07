@@ -1,13 +1,19 @@
 import pandas as pd
 import random
 import math
+import os
 
 
 # ============================================================
 # 1. CARGAR LOS DATOS
 # ============================================================
 
-df = pd.read_csv("loan_data.csv")
+ruta = os.path.join(
+    os.path.dirname(__file__),
+    "loan_data.csv"
+)
+
+df = pd.read_csv(ruta)
 
 print("Columnas del dataset:")
 print(df.columns)
@@ -38,7 +44,6 @@ atributos = [
     "previous_loan_defaults_on_file"
 ]
 
-# Variable que queremos predecir
 objetivo = "loan_status"
 
 
@@ -57,7 +62,6 @@ y = df[objetivo]
 indices = list(df.index)
 
 random.seed(42)
-
 random.shuffle(indices)
 
 cantidad_entrenamiento = int(len(indices) * 0.80)
@@ -71,14 +75,14 @@ y_train = y.loc[indices_entrenamiento]
 X_test = X.loc[indices_prueba]
 y_test = y.loc[indices_prueba]
 
-
 print("\nCantidad total:", len(df))
 print("Entrenamiento:", len(X_train))
 print("Prueba:", len(X_test))
 
 
 # ============================================================
-# 6. ENTROPÍA DE SHANNON
+# EJERCICIO 1
+# ENTROPÍA DE SHANNON
 # ============================================================
 
 def entropia(y):
@@ -110,7 +114,7 @@ def entropia(y):
 
 
 # ============================================================
-# 7. GANANCIA DE INFORMACIÓN
+# GANANCIA DE INFORMACIÓN
 # ============================================================
 
 def ganancia_informacion(X, y, atributo):
@@ -144,7 +148,7 @@ def ganancia_informacion(X, y, atributo):
 
 
 # ============================================================
-# 8. MOSTRAR GANANCIA DE CADA ATRIBUTO
+# MOSTRAR GANANCIA
 # ============================================================
 
 print("\nGanancia de información:")
@@ -157,42 +161,20 @@ for atributo in atributos:
         atributo
     )
 
-    print(
-        atributo,
-        "->",
-        ganancia
-    )
+    print(atributo, "->", ganancia)
 
 
 # ============================================================
-# 9. ALGORITMO ID3
+# ID3
 # ============================================================
 
 def id3(X, y, atributos):
 
-    # --------------------------------------------------------
-    # CASO 1:
-    # Todos los ejemplos pertenecen a la misma clase
-    # --------------------------------------------------------
-
     if len(y.unique()) == 1:
-
         return int(y.iloc[0])
 
-
-    # --------------------------------------------------------
-    # CASO 2:
-    # No quedan atributos
-    # --------------------------------------------------------
-
     if len(atributos) == 0:
-
         return int(y.mode()[0])
-
-
-    # --------------------------------------------------------
-    # BUSCAR EL ATRIBUTO CON MAYOR GANANCIA
-    # --------------------------------------------------------
 
     mejor_atributo = None
     mayor_ganancia = -1
@@ -206,43 +188,21 @@ def id3(X, y, atributos):
         )
 
         if ganancia > mayor_ganancia:
-
             mayor_ganancia = ganancia
             mejor_atributo = atributo
 
-
-    # --------------------------------------------------------
-    # SI NO HAY GANANCIA, DEVOLVER CLASE MAYORITARIA
-    # --------------------------------------------------------
-
     if mayor_ganancia <= 0:
-
         return int(y.mode()[0])
-
-
-    # --------------------------------------------------------
-    # CREAR NODO
-    # --------------------------------------------------------
 
     arbol = {
         mejor_atributo: {}
     }
-
-
-    # --------------------------------------------------------
-    # ELIMINAR ATRIBUTO UTILIZADO
-    # --------------------------------------------------------
 
     atributos_restantes = [
         atributo
         for atributo in atributos
         if atributo != mejor_atributo
     ]
-
-
-    # --------------------------------------------------------
-    # CREAR RAMAS
-    # --------------------------------------------------------
 
     valores = X[mejor_atributo].unique()
 
@@ -259,12 +219,11 @@ def id3(X, y, atributos):
             atributos_restantes
         )
 
-
     return arbol
 
 
 # ============================================================
-# 10. CONSTRUIR EL ÁRBOL
+# CONSTRUIR ÁRBOL ID3
 # ============================================================
 
 arbol = id3(
@@ -275,21 +234,19 @@ arbol = id3(
 
 
 # ============================================================
-# 11. MOSTRAR EL ÁRBOL DE FORMA LEGIBLE
+# MOSTRAR ÁRBOL
 # ============================================================
 
 def imprimir_arbol(arbol, nivel=0):
 
     espacios = "    " * nivel
 
-    # Si encontramos una hoja (0 o 1)
     if not isinstance(arbol, dict):
 
         print(espacios + "→ " + str(arbol))
+
         return
 
-
-    # Obtener el atributo del nodo
     atributo = next(iter(arbol))
 
     print(espacios + atributo)
@@ -316,23 +273,20 @@ print("========================================")
 
 imprimir_arbol(arbol)
 
+
 # ============================================================
-# 12. FUNCIÓN PARA PREDECIR CON EL ÁRBOL ID3
+# PREDICCIÓN ID3
 # ============================================================
 
 def predecir(arbol, ejemplo):
 
-    # Si llegamos a una hoja
     if not isinstance(arbol, dict):
         return arbol
 
-    # Obtener el atributo utilizado en este nodo
     atributo = next(iter(arbol))
 
-    # Obtener el valor que tiene el ejemplo
     valor = ejemplo[atributo]
 
-    # Si existe una rama para ese valor
     if valor in arbol[atributo]:
 
         return predecir(
@@ -340,13 +294,11 @@ def predecir(arbol, ejemplo):
             ejemplo
         )
 
-    # Si aparece un valor que no estaba en entrenamiento,
-    # devolvemos la clase más frecuente
     return 0
 
 
 # ============================================================
-# 13. REALIZAR PREDICCIONES SOBRE LOS DATOS DE PRUEBA
+# PREDICCIONES ID3
 # ============================================================
 
 predicciones = []
@@ -363,18 +315,8 @@ for indice in X_test.index:
     predicciones.append(prediccion)
 
 
-print("\n========================================")
-print("PREDICCIONES")
-print("========================================")
-
-print("Cantidad de predicciones:", len(predicciones))
-
-print("\nPrimeras predicciones:")
-print(predicciones[:20])
-
-
 # ============================================================
-# 14. MATRIZ DE CONFUSIÓN
+# MATRIZ DE CONFUSIÓN ID3
 # ============================================================
 
 VP = 0
@@ -398,7 +340,7 @@ for real, predicho in zip(y_test, predicciones):
 
 
 print("\n========================================")
-print("MATRIZ DE CONFUSIÓN")
+print("MATRIZ DE CONFUSIÓN - ID3")
 print("========================================")
 
 print("                 Predicho")
@@ -409,7 +351,7 @@ print("      1      ", FN, "       ", VP)
 
 
 # ============================================================
-# 15. MÉTRICAS
+# MÉTRICAS ID3
 # ============================================================
 
 total = VP + VN + FP + FN
@@ -421,25 +363,23 @@ if VP + FP > 0:
 else:
     precision = 0
 
-
 if VP + FN > 0:
     recall = VP / (VP + FN)
 else:
     recall = 0
 
-
 if precision + recall > 0:
-    f1 = 2 * (precision * recall) / (precision + recall)
+    f1 = (
+        2 *
+        (precision * recall) /
+        (precision + recall)
+    )
 else:
     f1 = 0
 
 
-# ============================================================
-# 16. MOSTRAR RESULTADOS
-# ============================================================
-
 print("\n========================================")
-print("MÉTRICAS")
+print("MÉTRICAS - ID3")
 print("========================================")
 
 print("VP:", VP)
@@ -447,7 +387,380 @@ print("VN:", VN)
 print("FP:", FP)
 print("FN:", FN)
 
-print("\nAccuracy :", accuracy)
-print("Precision:", precision)
-print("Recall   :", recall)
-print("F1-score :", f1)
+print(f"Accuracy: {accuracy:.3f}")
+print(f"Precision: {precision:.3f}")
+print(f"Recall: {recall:.3f}")
+print(f"F1: {f1:.3f}")
+
+
+# ============================================================
+# EJERCICIO 2
+# RANDOM FOREST
+# ============================================================
+
+
+# ============================================================
+# CONSTRUIR ÁRBOL ALEATORIO
+# ============================================================
+
+def id3_random(
+    X,
+    y,
+    atributos,
+    max_profundidad,
+    profundidad=0
+):
+
+    if len(y.unique()) == 1:
+        return int(y.iloc[0])
+
+    if len(atributos) == 0:
+        return int(y.mode()[0])
+
+    if profundidad >= max_profundidad:
+        return int(y.mode()[0])
+
+    # Seleccionar aleatoriamente atributos
+
+    cantidad_atributos = max(
+        1,
+        int(math.sqrt(len(atributos)))
+    )
+
+    atributos_disponibles = atributos.copy()
+
+    random.shuffle(atributos_disponibles)
+
+    atributos_seleccionados = atributos_disponibles[
+        :cantidad_atributos
+    ]
+
+    # Buscar mejor atributo
+
+    mejor_atributo = None
+    mayor_ganancia = -1
+
+    for atributo in atributos_seleccionados:
+
+        ganancia = ganancia_informacion(
+            X,
+            y,
+            atributo
+        )
+
+        if ganancia > mayor_ganancia:
+
+            mayor_ganancia = ganancia
+            mejor_atributo = atributo
+
+    if mayor_ganancia <= 0:
+        return int(y.mode()[0])
+
+    arbol = {
+        mejor_atributo: {}
+    }
+
+    atributos_restantes = [
+        atributo
+        for atributo in atributos
+        if atributo != mejor_atributo
+    ]
+
+    valores = X[mejor_atributo].unique()
+
+    for valor in valores:
+
+        indices = X[mejor_atributo] == valor
+
+        X_sub = X[indices]
+        y_sub = y[indices]
+
+        arbol[mejor_atributo][valor] = id3_random(
+            X_sub,
+            y_sub,
+            atributos_restantes,
+            max_profundidad,
+            profundidad + 1
+        )
+
+    return arbol
+
+
+# ============================================================
+# CREAR MUESTRA ALEATORIA
+# ============================================================
+
+def crear_muestra(X, y):
+
+    indices = list(X.index)
+
+    indices_muestra = random.choices(
+        indices,
+        k=len(indices)
+    )
+
+    X_muestra = X.loc[indices_muestra]
+    y_muestra = y.loc[indices_muestra]
+
+    return X_muestra, y_muestra
+
+
+# ============================================================
+# CONSTRUIR RANDOM FOREST
+# ============================================================
+
+def construir_random_forest(
+    X,
+    y,
+    atributos,
+    cantidad_arboles,
+    max_profundidad
+):
+
+    bosque = []
+
+    for i in range(cantidad_arboles):
+
+        X_muestra, y_muestra = crear_muestra(
+            X,
+            y
+        )
+
+        arbol = id3_random(
+            X_muestra,
+            y_muestra,
+            atributos,
+            max_profundidad
+        )
+
+        bosque.append(arbol)
+
+    return bosque
+
+
+# ============================================================
+# PREDICCIÓN DE UN ÁRBOL
+# ============================================================
+
+def predecir_arbol(arbol, ejemplo):
+
+    if not isinstance(arbol, dict):
+        return arbol
+
+    atributo = next(iter(arbol))
+
+    valor = ejemplo[atributo]
+
+    if valor in arbol[atributo]:
+
+        return predecir_arbol(
+            arbol[atributo][valor],
+            ejemplo
+        )
+
+    return 0
+
+
+# ============================================================
+# PREDICCIÓN RANDOM FOREST
+# ============================================================
+
+def predecir_random_forest(bosque, X):
+
+    predicciones = []
+
+    for indice in X.index:
+
+        ejemplo = X.loc[indice]
+
+        votos_0 = 0
+        votos_1 = 0
+
+        for arbol in bosque:
+
+            prediccion = predecir_arbol(
+                arbol,
+                ejemplo
+            )
+
+            if prediccion == 0:
+                votos_0 += 1
+            else:
+                votos_1 += 1
+
+        if votos_1 > votos_0:
+            predicciones.append(1)
+        else:
+            predicciones.append(0)
+
+    return predicciones
+
+
+# ============================================================
+# RANDOM FOREST CON 10 ÁRBOLES
+# ============================================================
+
+random.seed(42)
+
+cantidad_arboles = 10
+max_profundidad = 5
+
+bosque = construir_random_forest(
+    X_train,
+    y_train,
+    atributos,
+    cantidad_arboles,
+    max_profundidad
+)
+
+print("\n========================================")
+print("RANDOM FOREST")
+print("========================================")
+
+print("Cantidad de árboles:", cantidad_arboles)
+print("Profundidad máxima:", max_profundidad)
+
+
+# ============================================================
+# PREDICCIONES RANDOM FOREST
+# ============================================================
+
+predicciones_rf = predecir_random_forest(
+    bosque,
+    X_test
+)
+
+print("\nCantidad de predicciones:", len(predicciones_rf))
+
+print("\nPrimeras predicciones:")
+print(predicciones_rf[:20])
+
+
+# ============================================================
+# MATRIZ DE CONFUSIÓN RANDOM FOREST
+# ============================================================
+
+VP = 0
+VN = 0
+FP = 0
+FN = 0
+
+for real, predicho in zip(y_test, predicciones_rf):
+
+    if real == 1 and predicho == 1:
+        VP += 1
+
+    elif real == 0 and predicho == 0:
+        VN += 1
+
+    elif real == 0 and predicho == 1:
+        FP += 1
+
+    elif real == 1 and predicho == 0:
+        FN += 1
+
+
+print("\n========================================")
+print("MATRIZ DE CONFUSIÓN - RANDOM FOREST")
+print("========================================")
+
+print("                 Predicho")
+print("              0          1")
+print()
+print("Real  0      ", VN, "       ", FP)
+print("      1      ", FN, "       ", VP)
+
+
+# ============================================================
+# MÉTRICAS RANDOM FOREST
+# ============================================================
+
+total = VP + VN + FP + FN
+
+accuracy_rf = (VP + VN) / total
+
+if VP + FP > 0:
+    precision_rf = VP / (VP + FP)
+else:
+    precision_rf = 0
+
+if VP + FN > 0:
+    recall_rf = VP / (VP + FN)
+else:
+    recall_rf = 0
+
+if precision_rf + recall_rf > 0:
+
+    f1_rf = (
+        2 *
+        (precision_rf * recall_rf) /
+        (precision_rf + recall_rf)
+    )
+
+else:
+    f1_rf = 0
+
+
+print("\n========================================")
+print("MÉTRICAS - RANDOM FOREST")
+print("========================================")
+
+print("VP:", VP)
+print("VN:", VN)
+print("FP:", FP)
+print("FN:", FN)
+
+print(f"\nAccuracy: {accuracy_rf:.3f}")
+print(f"Precision: {precision_rf:.3f}")
+print(f"Recall: {recall_rf:.3f}")
+print(f"F1-score: {f1_rf:.3f}")
+
+# ============================================================
+#  PUNTO 4 - PREDICCIONES DE CADA ÁRBOL
+# ============================================================
+
+def predicciones_individuales(bosque, X):
+    resultados = []
+
+    for arbol in bosque:
+        predicciones = []
+
+        for _, fila in X.iterrows():
+            prediccion = predecir_arbol(arbol, fila)
+            predicciones.append(prediccion)
+
+        resultados.append(predicciones)
+
+    return resultados
+
+
+# Obtener las predicciones de los 10 árboles
+predicciones_arboles = predicciones_individuales(bosque, X_test)
+
+print("\n============================================================")
+print("PREDICCIONES INDIVIDUALES DE LOS 10 ÁRBOLES")
+print("============================================================")
+
+# Mostrar las primeras 20 personas del conjunto de prueba
+for i in range(min(20, len(X_test))):
+
+    votos = []
+
+    for numero_arbol in range(len(predicciones_arboles)):
+        prediccion = predicciones_arboles[numero_arbol][i]
+        votos.append(prediccion)
+
+    cantidad_0 = votos.count(0)
+    cantidad_1 = votos.count(1)
+
+    if cantidad_1 > cantidad_0:
+        prediccion_final = 1
+    else:
+        prediccion_final = 0
+
+    print(
+        f"Registro {i + 1} | "
+        f"Real: {y_test.iloc[i]} | "
+        f"Árboles: {votos} | "
+        f"Voto final: {prediccion_final}"
+    )

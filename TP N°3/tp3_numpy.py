@@ -3,13 +3,14 @@ import numpy as np
 import pandas as pd
 
 SEED = 42
-RUTA = sys.argv[1] if len(sys.argv) > 1 else "student_performance_dataset.csv"
+RUTA = sys.argv[1] if len(sys.argv) > 1 else "TP N°3/student_performance_dataset.csv"
 
 # ----------------------------------------------------------------------
 # Lectura y preparacion de datos
 # ----------------------------------------------------------------------
 df = pd.read_csv(RUTA)
 print("Filas originales:", len(df))
+df = df.dropna()                                      # hay filas con valores faltantes
 df = df.drop_duplicates().reset_index(drop=True)      # hay filas repetidas en el CSV
 print("Filas sin duplicados:", len(df))
 

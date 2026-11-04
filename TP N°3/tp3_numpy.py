@@ -140,9 +140,14 @@ print(f"Regresion logistica: P(aprobar) = {p_nuevo:.4f} -> "
       f"{'APROBADO' if p_nuevo >= 0.5 else 'REPROBADO'}")
 
 
-# ----------------------------------------------------------------------
+
+#--------------------------------------------------------------------------------------------
+
+
+#Esto está de más, pero lo dejo para que no se pierda el contexto
+
 # Ejercicio 2: SVM (formulacion dual, resuelta con SMO), solo numpy
-# ----------------------------------------------------------------------
+
 GAMMA = 1.0 / Ztr.shape[1]                  # equivale a 'scale' con datos estandarizados
 
 
